@@ -17,6 +17,13 @@ app.post('/users', (req, res) => {
         })
 })
 
+app.post('/tasks', (req, res) => {
+    const task = new Task(req.body)
+    task.save()
+        .then(() => res.send(task))
+        .catch(error => res.status(400).send(error))
+})
+
 app.listen(port, () => {
     console.log('Server running on ' + port)
 })
