@@ -30,7 +30,7 @@ app.get('/users/:id', (req, res) => {
             }
             res.send(user)
         })
-        .catch(error => res.status(500).send(error))
+        .catch(error => res.status(500).send())
 })
 
 app.post('/tasks', (req, res) => {
@@ -38,6 +38,12 @@ app.post('/tasks', (req, res) => {
     task.save()
         .then(() => res.status(201).send(task))
         .catch(error => res.status(400).send(error))
+})
+
+app.get('/tasks', (req, res) => {
+    Task.find({})
+        .then(tasks => res.status(200).send(tasks))
+        .catch(error => res.status(500).send())
 })
 
 app.listen(port, () => {
