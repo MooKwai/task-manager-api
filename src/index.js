@@ -15,6 +15,12 @@ app.post('/users', (req, res) => {
         .catch(error => res.status(400).send(error))
 })
 
+app.get('/users', (req, res) => {
+    User.find({})
+        .then(users => res.status(200).send(users))
+        .catch(error => res.status(500).send())
+})
+
 app.post('/tasks', (req, res) => {
     const task = new Task(req.body)
     task.save()
