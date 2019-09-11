@@ -25,10 +25,22 @@ router.post('/tasks', auth, async (req, res) => {
 
 router.get('/tasks', auth, async (req, res) => {
     try {
-        await req.user.populate('tasks').execPopulate()
+        const match = {}
+
+        if (req.query.completed) {
+            match.completed = req.query.completed === 'true'
+        }
+        await req.user.populate({
+            path: 'tasks',
+            match
+        }).execPopulate()
         res.status(200).send(buildResponse(true, 'Fetched tasks', req.user.tasks))
     } catch (e) {
-        res.status(500).send(buildResponse(false, 'Failed to fetch tasks'))
+        if (e.message === 'Invalid query') {
+            res.status(400).send(buildResponse(false, 'Query not valid'))
+        } else {
+            res.status(500).send(buildResponse(false, 'Failed to fetch tasks'))
+        }
     }
 })
 
