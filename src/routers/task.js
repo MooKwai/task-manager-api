@@ -23,6 +23,8 @@ router.post('/tasks', auth, async (req, res) => {
     }
 })
 
+// GET /tasks?completed=true
+// GET /tasks?limit=10&skip=20 (shows third page of 10 results)
 router.get('/tasks', auth, async (req, res) => {
     try {
         const match = {}
@@ -32,7 +34,11 @@ router.get('/tasks', auth, async (req, res) => {
         }
         await req.user.populate({
             path: 'tasks',
-            match
+            match,
+            options: {
+                limit: parseInt(req.query.limit),
+                skip: parseInt(req.query.skip)
+            }
         }).execPopulate()
         res.status(200).send(buildResponse(true, 'Fetched tasks', req.user.tasks))
     } catch (e) {
