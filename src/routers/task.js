@@ -25,28 +25,33 @@ router.post('/tasks', auth, async (req, res) => {
 
 // GET /tasks?completed=true
 // GET /tasks?limit=10&skip=20 (shows third page of 10 results)
+// GET /tasks?sortBy={field}_asc
 router.get('/tasks', auth, async (req, res) => {
-    try {
-        const match = {}
+    const match = {}
+    const sort = {}
 
-        if (req.query.completed) {
-            match.completed = req.query.completed === 'true'
-        }
+    if (req.query.completed) {
+        match.completed = req.query.completed === 'true'
+    }
+
+    if (req.query.sortBy) {
+        const parts = req.query.sortBy.split('_')
+        sort[parts[0]] = parts[1] === 'desc' ? -1 : 1
+    }
+
+    try {
         await req.user.populate({
             path: 'tasks',
             match,
             options: {
                 limit: parseInt(req.query.limit),
-                skip: parseInt(req.query.skip)
+                skip: parseInt(req.query.skip),
+                sort
             }
         }).execPopulate()
         res.status(200).send(buildResponse(true, 'Fetched tasks', req.user.tasks))
     } catch (e) {
-        if (e.message === 'Invalid query') {
-            res.status(400).send(buildResponse(false, 'Query not valid'))
-        } else {
-            res.status(500).send(buildResponse(false, 'Failed to fetch tasks'))
-        }
+        res.status(500).send(buildResponse(false, 'Failed to fetch tasks'))
     }
 })
 
