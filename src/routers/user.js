@@ -1,9 +1,23 @@
 const express = require('express')
+const multer = require('multer')
 const User = require('../models/user')
 const auth = require('../middleware/auth')
 const buildResponse = require('../middleware/response')
 
 const router = new express.Router()
+
+const upload = multer({
+    limits: {
+        fileSize: 1000000
+    },
+    fileFilter(req, file, cb) {
+        if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+            return cb(new Error('Please provide an image'))
+        }
+
+        cb(undefined, true)
+    }
+})
 
 router.post('/users', async (req, res) => {
     const user = new User(req.body)
@@ -87,6 +101,14 @@ router.delete('/users/me', auth, async (req, res) => {
     } catch (e) {
         res.status(500).send(buildResponse(false, 'Failed to delete profile'))
     }
+})
+
+router.post('/users/me/avatar', auth, upload.single('avatar'), async (req, res) => {
+    req.user.avatar = req.file.buffer
+    await req.user.save()
+    res.status(200).send(buildResponse(true, 'File saved'))
+}, (error, req, res, next) => {
+    res.status(400).send(buildResponse(false, 'File not saved', error.message))
 })
 
 module.exports = router
