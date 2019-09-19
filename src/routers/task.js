@@ -1,4 +1,5 @@
 const express = require('express')
+const mongoose = require('mongoose')
 const Task = require('../models/task')
 const auth = require('../middleware/auth')
 const buildResponse = require('../middleware/response')
@@ -15,7 +16,7 @@ router.post('/tasks', auth, async (req, res) => {
         await task.save()
         res.status(201).send(buildResponse(true, 'Task created', task))
     } catch (e) {
-        if (e.name === 'ValidationException') {
+        if (e.name === 'ValidationError') {
             res.status(400).send(buildResponse(false, 'Task not valid', e))
         } else {
             res.status(500).send(buildResponse(false, 'Failed to create task'))
@@ -71,12 +72,15 @@ router.get('/tasks/:id', auth, async (req, res) => {
 })
 
 router.patch('/tasks/:id', auth, async (req, res) => {
-    const updates = Object.keys(req.body)
+    const updates = Object.entries(req.body)
+
     const allowedUpdates = ['description', 'completed']
-    const isValidOperation = updates.every(update => allowedUpdates.includes(update))
+    const isValidOperation = updates.every(([key, value]) => {
+        return (allowedUpdates.includes(key) && value !== '')
+    })
 
     if (!isValidOperation) {
-        return res.status(400).send(buildResponse(false, 'Invalid task'))
+        return res.status(400).send(buildResponse(false, 'Invalid update'))
     }
 
     try {
@@ -89,12 +93,12 @@ router.patch('/tasks/:id', auth, async (req, res) => {
             return res.status(404).send(buildResponse(false, 'Task not found'))
         }
 
-        updates.forEach(update => task[update] = req.body[update])
+        updates.forEach(([key, value]) => task[key] = value)
         task.save()
 
         res.status(200).send(buildResponse(true, 'Updated task', task))
     } catch (e) {
-        if (e.name === 'ValidationException') {
+        if (e.name === 'ValidationError') {
             res.status(400).send(buildResponse(false, 'Task not valid', e))
         } else {
             res.status(500).send(buildResponse(false, 'Failed to update task'))

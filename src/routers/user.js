@@ -30,7 +30,7 @@ router.post('/users', async (req, res) => {
         const token = await user.generateAuthToken()
         res.status(201).send(buildResponse(true, 'Profile created', { user, token }))
     } catch (e) {
-        if (e.name === 'ValidationException') {
+        if (e.name === 'ValidationError') {
             res.status(400).send(buildResponse(false, 'Profile not valid', e))
         } else {
             res.status(500).send(buildResponse(false, 'Failed to create profile'))
@@ -73,22 +73,24 @@ router.get('/users/me', auth, async (req, res) => {
 })
 
 router.patch('/users/me', auth, async (req, res) => {
-    const updates = Object.keys(req.body)
+    const updates = Object.entries(req.body)
     const allowedUpdates = ['name', 'email', 'password', 'age']
-    const isValidOperation = updates.every(update => allowedUpdates.includes(update))
+    const isValidOperation = updates.every(([key, value]) => {
+        return (allowedUpdates.includes(key) && value !== '')
+    })
 
     if (!isValidOperation) {
         return res.status(400).send(buildResponse(false, 'Invalid update', req.body))
     }
 
     try {
-        updates.forEach(update => req.user[update] = req.body[update])
+        updates.forEach(([key, value]) => req.user[key] = req.body[key])
 
         await req.user.save()
 
         res.status(200).send(buildResponse(true, 'Updated profile', req.user))
     } catch (e) {
-        if (e.name === 'ValidationException') {
+        if (e.name === 'ValidationError') {
             res.status(400).send(buildResponse(false, 'Profile not valid', e))
         } else {
             res.status(500).send(buildResponse(false, 'Failed to update profile'))
