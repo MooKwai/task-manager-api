@@ -1,5 +1,4 @@
 const express = require('express')
-const mongoose = require('mongoose')
 const Task = require('../models/task')
 const auth = require('../middleware/auth')
 const buildResponse = require('../middleware/response')
