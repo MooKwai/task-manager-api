@@ -33,14 +33,6 @@ const userSchema = new mongoose.Schema({
             }
         }
     },
-    age: {
-        type: Number,
-        validate(value) {
-            if (!validator.isInt(value, { min: 0 })) {
-                throw new Error('Invalid age')
-            }
-        }
-    },
     tokens: [{
         token: {
             type: String,
