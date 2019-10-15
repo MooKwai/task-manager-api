@@ -10,7 +10,7 @@ Written with:
 
 ## Dev Setup
 * Clone the repo
-* Ensure (mongo community edition)[https://docs.mongodb.com/manual/installation/] is installed
+* Ensure [mongo community edition](https://docs.mongodb.com/manual/installation/) is installed
 * Run `<path-to-mongodb-installation>/bin/mongod --dbpath=<location-to-store-local-databases>`
 * Run `npm install` inside the cloned project
 * Create a config folder in the root of the project
